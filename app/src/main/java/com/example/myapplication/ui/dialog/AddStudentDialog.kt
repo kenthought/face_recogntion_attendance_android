@@ -224,7 +224,7 @@ class AddStudentDialog  : DialogFragment()  {
         }.addOnPausedListener {
             Log.d("PAUSED", "Upload is paused")
         }.addOnFailureListener {
-            Log.d("SUCCESS", "Upload failed")
+            Log.d("FAILED", "Upload failed")
         }.addOnSuccessListener {
             Log.d("SUCCESS", "Upload successful")
         }
