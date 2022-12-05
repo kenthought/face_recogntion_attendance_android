@@ -57,6 +57,7 @@ class HomeFragment : Fragment() {
         database = FirebaseDatabase.getInstance().getReference("classes/" + user!!.uid)
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                classItem.clear()
                 if (snapshot.exists()) {
                     for (classSnapshot in snapshot.children) {
                         val classes = classSnapshot.getValue(ClassItem::class.java)

@@ -224,9 +224,9 @@ class AddStudentDialog  : DialogFragment()  {
         }.addOnPausedListener {
             Log.d("PAUSED", "Upload is paused")
         }.addOnFailureListener {
-            Toast.makeText(requireContext(), "Failed uploading picture", Toast.LENGTH_SHORT)
+            Log.d("SUCCESS", "Upload failed")
         }.addOnSuccessListener {
-            Toast.makeText(requireContext(), "Picture uploaded", Toast.LENGTH_SHORT)
+            Log.d("SUCCESS", "Upload successful")
         }
 
     }
