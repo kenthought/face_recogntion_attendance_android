@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "833855827320",
+    "firebase_url": "https://face-recognition-app-5d699-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "face-recognition-app-5d699",
+    "storage_bucket": "face-recognition-app-5d699.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:833855827320:android:143a3c0cd8bbc52a4b6c8d",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "833855827320-iai5q45a4i5vjcp2jmbgigttv52bsi7a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_unCyHrlyXKU52bavdWZUa3eQB-p7WNA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "833855827320-iai5q45a4i5vjcp2jmbgigttv52bsi7a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
