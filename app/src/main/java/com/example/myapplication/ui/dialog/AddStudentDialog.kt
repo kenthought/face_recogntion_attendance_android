@@ -40,7 +40,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class AddStudentDialog  : DialogFragment()  {
+class AddStudentDialog : DialogFragment() {
     private lateinit var database: DatabaseReference
     private var storage = Firebase.storage
     private lateinit var studentName: EditText
@@ -82,18 +82,44 @@ class AddStudentDialog  : DialogFragment()  {
             builder.setView(dialogView)
                 .setPositiveButton("Add",
                     DialogInterface.OnClickListener { dialog, id ->
-                        val studentPicture = StudentPicture(idNumber.text.toString(),
+                        if (idNumber.text.toString() != "" &&
+                            studentName.text.toString() != ""
+                            && yearLevels.selectedItem.toString() != ""
+                            && file_name.text.toString() != ""
+                        ) {
+                            val studentPicture = StudentPicture(
+                                idNumber.text.toString(),
                                 studentName.text.toString(), yearLevels.selectedItem.toString(),
-                                className, subject, file_name.text.toString())
-                        val studentItem = StudentItem(idNumber.text.toString(),
-                            studentName.text.toString(), yearLevels.selectedItem.toString(),
-                            className, subject)
+                                className, subject, file_name.text.toString()
+                            )
+                            val studentItem = StudentItem(
+                                idNumber.text.toString(),
+                                studentName.text.toString(), yearLevels.selectedItem.toString(),
+                                className, subject
+                            )
 
-                        database.child("student_picture").child(studentName.text.toString()).push().setValue(studentPicture)
-                        database.child("students").child(classID).push().setValue(studentItem)
-                        database.child("classes/" + user!!.uid + "/" + classID + "/" + "students/").setValue(Integer.parseInt(students) + 1)
-                        saveToFaceRecognition();
-                        uploadImage();
+                            database.child("student_picture").child(studentName.text.toString())
+                                .push().setValue(studentPicture)
+                            database.child("students").child(classID).push().setValue(studentItem)
+                            database.child("classes/" + user!!.uid + "/" + classID + "/" + "students/")
+                                .setValue(Integer.parseInt(students) + 1)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "Student added!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            saveToFaceRecognition();
+
+                            uploadImage();
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                "Please fill up necessary fields",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     })
                 .setNegativeButton("Cancel",
                     DialogInterface.OnClickListener { dialog, id ->
@@ -133,7 +159,7 @@ class AddStudentDialog  : DialogFragment()  {
 //        }
     }
 
-    fun saveToFaceRecognition() {
+    private fun saveToFaceRecognition() {
         var outputStream: OutputStream;
         var bitmapDrawable = imageView.drawable;
         var bitmap = bitmapDrawable.toBitmap()
@@ -143,14 +169,22 @@ class AddStudentDialog  : DialogFragment()  {
                 var contentValues = ContentValues();
                 contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "FRIMAGE.jpg")
                 contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-                contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES+File.separator+"SPCT"+File.separator+studentName.text.toString())
-                var imageUri2 = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                contentValues.put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_PICTURES + File.separator + "SPCT" + File.separator + studentName.text.toString()
+                )
+                var imageUri2 =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 outputStream = resolver.openOutputStream(Objects.requireNonNull(imageUri2!!))!!;
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 Objects.requireNonNull(outputStream)
             }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Cannot execute copy image\n"+e.message, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "Cannot execute copy image\n" + e.message,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -209,7 +243,8 @@ class AddStudentDialog  : DialogFragment()  {
     fun uploadImage() {
         val storageRef = storage.reference
 
-        val studentPicture = storageRef.child(studentName.text.toString() + "/"+file_name.text+".jpg")
+        val studentPicture =
+            storageRef.child(studentName.text.toString() + "/" + file_name.text + ".jpg")
         val inputStream = requireActivity().contentResolver.openInputStream(imageUri!!)
 
         val metadata = storageMetadata {
@@ -248,7 +283,7 @@ class AddStudentDialog  : DialogFragment()  {
 //        }
 //    }
 
-    fun copyStreamToFile(localFile : File) {
+    fun copyStreamToFile(localFile: File) {
 
     }
 }

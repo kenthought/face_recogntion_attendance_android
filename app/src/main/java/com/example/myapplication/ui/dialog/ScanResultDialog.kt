@@ -62,49 +62,28 @@ class ScanResultDialog : DialogFragment() {
 
                     if (checkStudent) {
                         val key: String = database.child("attendance").push().key.toString()
+
                         database.child("attendance/" + user!!.uid + "/" + key)
                             .setValue(AttendanceItem(key, className, subject, studentName, time))
-                            .addOnSuccessListener {
-                                val date = time.substring(0, time.indexOf(" "))
-                                val calendar = Calendar.getInstance()
-                                val simpleDateFormat = SimpleDateFormat("dd/M/yyyy")
-                                calendar.time = simpleDateFormat.parse(date)
-                                database.child(
-                                    "report/" + classId + "/" + calendar.get(Calendar.YEAR)
-                                        .toString() + "/"
-                                            + calendar.get(Calendar.MONTH)
-                                        .toString() + "/" + calendar.get(Calendar.DATE).toString()
-                                )
-                                    .push().setValue(AttendanceReporting(studentName))
-                                    .addOnSuccessListener {
-                                        val scanResultText =
-                                            dialogView.findViewById(R.id.scan_result_text) as TextView
-                                        scanResultText.text = "Scan successful!"
-                                        val showSuccess =
-                                            dialogView.findViewById(R.id.scan_result_success) as ImageView
-                                        showSuccess.visibility = View.VISIBLE
-                                    }
-                                    .addOnFailureListener {
-                                        Log.d("Error", it.message.toString())
 
-                                        val scanResultText =
-                                            dialogView.findViewById(R.id.scan_result_text) as TextView
-                                        scanResultText.text = "Scan failed"
-                                        val showFailed =
-                                            dialogView.findViewById(R.id.scan_result_failed) as ImageView
-                                        showFailed.visibility = View.VISIBLE
-                                    }
-                            }
-                            .addOnFailureListener {
-                                Log.d("Error", it.message.toString())
+                        val date = time.substring(0, time.indexOf(" "))
+                        val calendar = Calendar.getInstance()
+                        val simpleDateFormat = SimpleDateFormat("dd/M/yyyy")
+                        calendar.time = simpleDateFormat.parse(date)
 
-                                val scanResultText =
-                                    dialogView.findViewById(R.id.scan_result_text) as TextView
-                                scanResultText.text = "Scan failed"
-                                val showFailed =
-                                    dialogView.findViewById(R.id.scan_result_failed) as ImageView
-                                showFailed.visibility = View.VISIBLE
-                            }
+                        database.child(
+                            "report/" + classId + "/" + calendar.get(Calendar.YEAR)
+                                .toString() + "/"
+                                    + calendar.get(Calendar.MONTH)
+                                .toString() + "/" + calendar.get(Calendar.DATE).toString()
+                        )
+                            .push().setValue(AttendanceReporting(studentName, time))
+                        val scanResultText =
+                            dialogView.findViewById(R.id.scan_result_text) as TextView
+                        scanResultText.text = "Scan successful!"
+                        val showSuccess =
+                            dialogView.findViewById(R.id.scan_result_success) as ImageView
+                        showSuccess.visibility = View.VISIBLE
                     } else {
                         val scanResultText =
                             dialogView.findViewById(R.id.scan_result_text) as TextView
@@ -126,6 +105,7 @@ class ScanResultDialog : DialogFragment() {
                 showFailed.visibility = View.VISIBLE
             }
 
+            isCancelable = false
             // Pass null as the parent view because its going in the dialog layout
             builder.setView(dialogView)
                 .setPositiveButton("OK", null)
