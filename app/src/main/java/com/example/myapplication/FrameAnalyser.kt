@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.fragment.app.FragmentManager
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -26,7 +27,11 @@ import kotlin.math.sqrt
 // Analyser class to process frames and produce detections.
 class FrameAnalyser( private var context: Context ,
                      private var boundingBoxOverlay: BoundingBoxOverlay ,
-                     private var model: FaceNetModel
+                     private var model: FaceNetModel,
+                     private var className: String,
+                     private var classID: String,
+                     private var subjectName: String,
+                     private var fragmentManager: FragmentManager
 ) : ImageAnalysis.Analyzer {
 
     private val realTimeOpts = FaceDetectorOptions.Builder()
@@ -103,7 +108,7 @@ class FrameAnalyser( private var context: Context ,
             val predictions = ArrayList<Prediction>()
             if(faces.size == 0) {
                 Log.d("111", "false")
-                Attendance.attendance("", "")
+                Attendance.attendance("", "", "", "", "", fragmentManager)
             }
             for (face in faces) {
                 try {
@@ -179,8 +184,7 @@ class FrameAnalyser( private var context: Context ,
                         Logger.log( "Person identified as $bestScoreUserName" )
                         val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
                         val currentDate = sdf.format(Date())
-                        Log.d("111", "true")
-                        Attendance.attendance(bestScoreUserName, currentDate)
+                        Log.d("111", "true" + bestScoreUserName)
                         predictions.add(
                             Prediction(
                                 face.boundingBox,
@@ -189,6 +193,7 @@ class FrameAnalyser( private var context: Context ,
                                 maskLabel
                             )
                         )
+                        Attendance.attendance(bestScoreUserName, currentDate, className, classID, subjectName, fragmentManager)
                     }
                     else {
                         // Inform the user to remove the mask

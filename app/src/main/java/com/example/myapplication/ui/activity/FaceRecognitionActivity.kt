@@ -30,6 +30,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import com.example.myapplication.*
 import com.example.myapplication.FileReader
@@ -60,6 +61,9 @@ class FaceRecognitionActivity : AppCompatActivity() {
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var capture: Button;
+    private lateinit var className: String;
+    private lateinit var classID: String;
+    private lateinit var subject: String;
 //    private lateinit var captureStudent: ArrayList<CaptureStudent>;
 
     // <----------------------- User controls --------------------------->
@@ -79,28 +83,49 @@ class FaceRecognitionActivity : AppCompatActivity() {
 
     // <---------------------------------------------------------------->
 
-
     companion object {
 
         lateinit var logTextView: TextView
+        val faceRecognitionActivity = FaceRecognitionActivity()
+        fun scanRecognized() = faceRecognitionActivity.scanRecognized()
         var studentName = "";
         var getTime = "";
+        var class_name = "";
+        var class_id = "";
+        var subject_name = "";
+        var fragment_manager: FragmentManager? = null;
 
         fun setMessage(message: String) {
             logTextView.text = message
         }
 
-        fun listAttendance(student_name: String, time: String) {
+        fun listAttendance(
+            student_name: String,
+            time: String,
+            className: String,
+            classID: String,
+            subjectName: String,
+            fragmentManager: FragmentManager
+        ) {
             //check kung naa na ang name sa student sa array.
             //ibutang sa mutable list ang attendance tapos i access sa baba unya
             //himoog list para ma distinct by. kung dili proceed ta atong o click
             //ang button para ibutang sa list!
             studentName = "";
             getTime = "";
+            class_name = "";
+            class_id = "";
+            subject_name = "";
+            fragment_manager = null;
 
-            if(student_name != "") {
+            if (student_name != "") {
                 studentName = student_name;
                 getTime = time
+                class_name = className
+                class_id = classID
+                subject_name = subjectName
+                fragment_manager = fragmentManager
+                scanRecognized()
             } else {
                 studentName = "";
                 getTime = "";
@@ -110,7 +135,6 @@ class FaceRecognitionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bundle = intent.extras
         // Remove the status bar to have a full screen experience
         // See this answer on SO -> https://stackoverflow.com/a/68152688/10878733
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -128,15 +152,26 @@ class FaceRecognitionActivity : AppCompatActivity() {
         previewView = findViewById(R.id.preview_view)
         logTextView = findViewById(R.id.log_textview)
         logTextView.movementMethod = ScrollingMovementMethod()
-        // Necessary to keep the Overlay above the PreviewView so that the boxes are visible.
+        // Necessary to keep the Overlay above the Preview View so that the boxes are visible.
         val boundingBoxOverlay = findViewById<BoundingBoxOverlay>(R.id.bbox_overlay)
         boundingBoxOverlay.setWillNotDraw(false)
         boundingBoxOverlay.setZOrderOnTop(true)
 
+        val bundle = intent.extras
+        className = bundle!!.getString("CLASS NAME")!!
+        classID = bundle!!.getString("CLASS ID")!!
+        subject = bundle!!.getString("SUBJECT")!!
         faceNetModel = FaceNetModel(this, modelInfo, useGpu, useXNNPack)
-        frameAnalyser = FrameAnalyser(this, boundingBoxOverlay, faceNetModel)
+        frameAnalyser = FrameAnalyser(
+            this,
+            boundingBoxOverlay,
+            faceNetModel,
+            className,
+            classID,
+            subject,
+            supportFragmentManager
+        )
         fileReader = FileReader(faceNetModel)
-
 
         // We'll only require the CAMERA permission from the user.
         // For scoped storage, particularly for accessing documents, we won't require WRITE_EXTERNAL_STORAGE or
@@ -179,7 +214,7 @@ class FaceRecognitionActivity : AppCompatActivity() {
 
         capture.setOnClickListener {
 
-            if(FaceRecognitionActivity.studentName != "" && FaceRecognitionActivity.studentName != "Unknown") {
+            if (FaceRecognitionActivity.studentName != "" && FaceRecognitionActivity.studentName != "Unknown") {
                 val bundleForScan = Bundle()
                 bundleForScan.putString("SCAN RESULT", "successful")
                 bundleForScan.putString("CLASS NAME", bundle!!.getString("CLASS NAME"))
@@ -196,8 +231,7 @@ class FaceRecognitionActivity : AppCompatActivity() {
                 val scanResultDialog = ScanResultDialog()
                 scanResultDialog.arguments = bundleForScan;
                 scanResultDialog.show(supportFragmentManager, "add")
-            } else
-             {
+            } else {
                 Toast.makeText(applicationContext, "No Face Detected!", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -419,5 +453,25 @@ class FaceRecognitionActivity : AppCompatActivity() {
         val data = objectInputStream.readObject() as ArrayList<Pair<String, FloatArray>>
         objectInputStream.close()
         return data
+    }
+
+    fun scanRecognized() {
+        val scanResultDialog = ScanResultDialog()
+        if (!scanResultDialog.dialogIsShown)
+            if (FaceRecognitionActivity.studentName != "" && FaceRecognitionActivity.studentName != "Unknown") {
+                Log.d(
+                    "scanRecognized",
+                    FaceRecognitionActivity.studentName + " " + FaceRecognitionActivity.getTime
+                )
+                val bundleForScan = Bundle()
+                bundleForScan.putString("SCAN RESULT", "successful")
+                bundleForScan.putString("CLASS NAME", FaceRecognitionActivity.class_name)
+                bundleForScan.putString("CLASS ID", FaceRecognitionActivity.class_id)
+                bundleForScan.putString("SUBJECT", FaceRecognitionActivity.subject_name)
+                bundleForScan.putString("STUDENT NAME", FaceRecognitionActivity.studentName)
+                bundleForScan.putString("TIME", FaceRecognitionActivity.getTime)
+                scanResultDialog.arguments = bundleForScan;
+                FaceRecognitionActivity.fragment_manager?.let { scanResultDialog.show(it, "add") }
+            }
     }
 }

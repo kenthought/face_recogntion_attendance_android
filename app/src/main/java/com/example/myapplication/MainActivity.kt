@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Firebase.database.setPersistenceEnabled(true)
         database = Firebase.database.reference
 //        teacherItem = TeacherItem("","","","","","","","")
         binding = ActivityMainBinding.inflate(layoutInflater)
